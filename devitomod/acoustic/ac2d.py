@@ -66,9 +66,9 @@ class Acoustic2D():
         rec_z : :obj:`numpy.ndarray` or :obj:`float`
             Receiver z-coordinates in m
         t0 : :obj:`float`
-            Initial time
+            Initial time in ms
         tn : :obj:`int`
-            Number of time samples
+            Maximum time in ms
         src_type : :obj:`str`
             Source type
         f0 : :obj:`float`, optional
