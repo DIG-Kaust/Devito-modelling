@@ -12,8 +12,7 @@ This repository is organized as follows:
 ## Notebooks
 The following notebooks are provided:
 
-- :orange_book: ``X1.ipynb``: notebook performing ...;
-- :orange_book: ``X2.ipynb``: notebook performing ...
+- :orange_book: ``Acoustic2d.ipynb``: notebook performing 2D Acoustic modelling;
 
 
 ## Getting started :space_invader: :robot:
