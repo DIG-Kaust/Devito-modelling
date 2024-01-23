@@ -1,23 +1,21 @@
 #!/bin/bash
 # 
-# Installer for package
+# Installer for Devito-modelling environment
 # 
-# Run: ./install.sh
-# 
-# M. Ravasi, 24/05/2022
+# Run: ./install_env.sh 
+#
+# M. Ravasi, 23/01/2024
 
-echo 'Creating my_env environment'
+echo 'Creating Devito-modelling environment'
 
 # create conda env
 conda env create -f environment.yml
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate my_env
-conda env list
+conda activate devitomod
 echo 'Created and activated environment:' $(which python)
 
-# check cupy and torch work as expected
-echo 'Checking cupy and torch versions and running a command...'
-python -c 'import cupy as cp; print(cp.__version__); import torch; print(torch.__version__);  print(torch.cuda.get_device_name(torch.cuda.current_device())); print(torch.ones(10).to("cuda:0"))'
+# check packages work as expected
+echo 'Checking devito version and running a command...'
+python -c 'import devito; print(devito.__version__);'
 
 echo 'Done!'
-

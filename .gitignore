@@ -15,10 +15,10 @@ db.sqlite3
 # Build #
 build
 dist
-package.egg-info/
+devitomod.egg-info/
 
 # setuptools_scm generated  #
-package/version.py 
+devitomod/version.py 
 
 # Development #
 .ipynb_checkpoints/

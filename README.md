@@ -1,16 +1,13 @@
-![LOGO](https://github.com/DIG-Kaust/Project_Template/blob/master/logo.png)
+# Devito-modelling
 
-Reproducible material for **XXX -
-Ravasi M., Author M., Author C.** submitted to XXX.
-
+A collection of codes to perform all sort of seismic modeling with Devito.
 
 ## Project structure
 This repository is organized as follows:
 
-* :open_file_folder: **package**: python library containing routines for ....;
-* :open_file_folder: **data**: folder containing data (or instructions on how to retrieve the data
-* :open_file_folder: **notebooks**: set of jupyter notebooks reproducing the experiments in the paper (see below for more details);
-* :open_file_folder: **scripts**: set of python scripts used to run multiple experiments ...
+* :open_file_folder: **devitomod**: python library containing routines to perform seismic modelling with devito;
+* :open_file_folder: **data**: folder containing data used in the examples
+* :open_file_folder: **notebooks**: set of jupyter notebooks showcasing how to use devitomod to model seismic data.
 
 ## Notebooks
 The following notebooks are provided:
@@ -37,13 +34,11 @@ pip install -e .
 
 Remember to always activate the environment by typing:
 ```
-conda activate my_env
+conda activate devitomod
 ```
 
-Finally, to run tests simply type:
+Also, to enable OpenMP when running a Devito code, make sure to set the following environment variable before running a code
+or opening jupyter-lab
 ```
-pytest
+export DEVITO_LANGUAGE=openmp
 ```
-
-**Disclaimer:** All experiments have been carried on a Intel(R) Xeon(R) CPU @ 2.10GHz equipped with a single NVIDIA GEForce RTX 3090 GPU. Different environment 
-configurations may be required for different combinations of workstation and GPU.
