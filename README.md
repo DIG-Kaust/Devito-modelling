@@ -13,6 +13,7 @@ This repository is organized as follows:
 The following notebooks are provided:
 
 - :orange_book: ``Acoustic2d.ipynb``: notebook performing 2D Acoustic modelling;
+- :orange_book: ``Elastic2d.ipynb``: notebook performing 2D Elastic modelling;
 
 
 ## Getting started :space_invader: :robot:
