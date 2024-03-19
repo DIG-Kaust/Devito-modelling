@@ -10,6 +10,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import Tuple
 from typing import Union
 from tqdm import tqdm
+import warnings
 
 from devito import *
 from examples.seismic.elastic.wavesolver import ElasticWaveSolver
@@ -52,6 +53,9 @@ class Elastic2D():
 
         self.space_order = space_order
         self.fs = fs
+        self.vp = vp
+        self.vs = vs
+        self.spacing = spacing
         self.model = Model(vp=vp, vs=vs, b=1/rho, origin=origin, shape=shape, spacing=spacing, 
                            dtype=np.float32, space_order=space_order, nbl=nbl, bcs="mask", fs=fs)
 
@@ -91,9 +95,14 @@ class Elastic2D():
         rec_coordinates[:,0] = rec_x
         rec_coordinates[:,1] = rec_z
 
+        
+
         self.geometry = AcquisitionGeometry(self.model, rec_coordinates, src_coordinates, 
                                             t0=t0, tn=tn, src_type=src_type, 
                                             f0=None if f0 is None else f0 * 1e-3,fs=self.model.fs)
+        
+        if (self.vp.min()*1000/f0) < self.spacing[0]*5 or (self.vp.min()*1000/f0) < self.spacing[1]*5 or (self.vs.min()*1000/f0) < self.spacing[0]*5 or (self.vs.min()*1000/f0) < self.spacing[1]*5:
+            warnings.warn("To avoid numerical dispersion in your data, ensure that the following condition is met: min(v)/f0 < 5dx and min(v)/f0 < 5dz. Either refine the velocity grid or reduce the f0 frequency to mitigate this issue.")        
 
     def solve_one_shot(self, isrc, wav: npt.DTypeLike=None, dt: float=None, saveu: bool=False):
         """Solve wave equation for one shot
