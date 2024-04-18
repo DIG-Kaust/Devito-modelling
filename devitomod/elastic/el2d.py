@@ -102,7 +102,7 @@ class Elastic2D():
                                             f0=None if f0 is None else f0 * 1e-3,fs=self.model.fs)
         
         if (self.vp.min()*1000/f0) < self.spacing[0]*5 or (self.vp.min()*1000/f0) < self.spacing[1]*5 or (self.vs.min()*1000/f0) < self.spacing[0]*5 or (self.vs.min()*1000/f0) < self.spacing[1]*5:
-            warnings.warn("To avoid numerical dispersion in your data, ensure that the following condition is met: min(v)/f0 < 5dx and min(v)/f0 < 5dz. Either refine the velocity grid or reduce the f0 frequency to mitigate this issue.")        
+            warnings.warn("To avoid numerical dispersion in your data, ensure that the following condition is met: min(v)/f0 > 5dx and min(v)/f0 > 5dz. Either refine the velocity grid or reduce the f0 frequency to mitigate this issue.")        
 
     def solve_one_shot(self, isrc, wav: npt.DTypeLike=None, dt: float=None, saveu: bool=False):
         """Solve wave equation for one shot
