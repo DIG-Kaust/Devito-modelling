@@ -27,7 +27,6 @@ dependencies = [
         "matplotlib",
         "tqdm",
         "devito",
-        "pytest"
     ]
 dynamic = ["version"]
 
