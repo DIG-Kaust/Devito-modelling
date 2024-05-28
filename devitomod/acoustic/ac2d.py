@@ -3,6 +3,7 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import ray
 
 from typing import Tuple
 from typing import Union
@@ -18,7 +19,7 @@ mpl.rc('font', size=16)
 mpl.rc('figure', figsize=(8, 6))
 
 
-class Acoustic2D():
+class Acoustic2D(object):
     def __init__(self):
         pass
 
@@ -112,32 +113,8 @@ class Acoustic2D():
             Wavefield snapshots
 
         """
-
-        # create geometry for single source
-        geometry = AcquisitionGeometry(self.model, self.geometry.rec_positions, self.geometry.src_positions[isrc, :],
-                                       self.geometry.t0, self.geometry.tn, f0=self.geometry.f0,
-                                       src_type=self.geometry.src_type, fs=self.fs)
-        src = None
-        if wav is not None:
-            # assign wavelet
-            src = RickerSource(name='src', grid=self.model.grid, f0=20,
-                               npoint=1, time_range=geometry.time_axis)
-            src.coordinates.data[:, 0] = geometry.src.coordinates.data[0, 0]
-            src.coordinates.data[:, 1] = geometry.src.coordinates.data[0, 1]
-            src.data[:] = wav
-
-        # solve
-        solver = AcousticWaveSolver(self.model, geometry, space_order=self.space_order)
-        d, u, _ = solver.forward(src=src, save=saveu)
-
-        # resample
-        taxis = None
-        if dt is not None:
-            d = d.resample(dt)
-            taxis = d.time_values
-
-        return d, u, taxis
-
+        return _solve_one_shot(self, isrc, wav, dt, saveu)
+    
     def solve_all_shots(self, wav: npt.DTypeLike = None, dt: float = None, tqdm_signature = None, 
                         figdir: str = None, datadir: str = None, savedtot: bool = False):
         """Solve wave equation for all shots in geometry
@@ -161,6 +138,8 @@ class Acoustic2D():
         -------
         dtot : :obj:`np.ndarray`
             Data
+        taxis : :obj:`np.ndarray`
+            Time axis
 
         """
 
@@ -198,6 +177,35 @@ class Acoustic2D():
         if savedtot:
             dtot = np.array(dtot).transpose(0, 2, 1)
         return dtot, taxis
+    
+    def ray_solve_all_shots(self, wav: npt.DTypeLike = None, dt: float = None):
+        """Solve wave equation for all shots in geometry using ray
+
+        Parameters
+        ----------
+        wav : :obj:`float`, optional
+            Wavelet (if not provided, use wavelet in geometry)
+        dt : :obj:`float`, optional
+            Time sampling of data (will be resampled)
+        
+        Returns
+        -------
+        dtot : :obj:`np.ndarray`
+            Data
+        taxis : :obj:`np.ndarray`
+            Time axis
+            
+        """
+        # Model dataset (distributed mode)
+        nsrc = self.geometry.src_positions.shape[0]
+        futures = [_ray_solve_one_shot.remote(self, isrc, wav, dt) for isrc in range(nsrc)]
+        dtot = ray.get(futures)
+        
+        taxis = dtot[0][2]
+        dtot = [d[0].data for d in dtot]
+        dtot = np.array(dtot).transpose(0, 2, 1)
+        return dtot, taxis
+    
 
     def plot_velocity(self, source=True, receiver=True, colorbar=True, cmap="jet", figsize=(13, 5), figpath=None):
         """Display velocity model
@@ -287,7 +295,6 @@ class Acoustic2D():
             Full path (including filename) where to save figure
 
         """
-
         scale = np.max(rec) * clip
         extent = [self.model.origin[0], self.model.origin[0] + 1e-3 * self.model.domain_size[0],
                   1e-3 * self.geometry.tn, self.geometry.t0]
@@ -311,3 +318,63 @@ class Acoustic2D():
             plt.close()
                
         return ax
+
+
+def _solve_one_shot(awe2d: Acoustic2D, isrc: int, wav: npt.DTypeLike = None,
+                    dt: float = None, saveu: bool = False):
+    """Solve wave equation for one shot
+
+    Parameters
+    ----------
+    awe2d : :obj:`Acoustic2D`
+        Acoustic2D object
+    isrc : :obj:`float`
+        Index of source to model
+    wav : :obj:`float`, optional
+        Wavelet (if not provided, use wavelet in geometry)
+    dt : :obj:`float`, optional
+        Time sampling of data (will be resampled)
+    saveu : :obj:`bool`, optional
+        Save snapshots
+
+    Returns
+    -------
+    d : :obj:`np.ndarray`
+        Data
+    u : :obj:`np.ndarray`
+        Wavefield snapshots
+
+    """
+    # create geometry for single source
+    geometry = AcquisitionGeometry(awe2d.model, awe2d.geometry.rec_positions,
+                                   awe2d.geometry.src_positions[isrc, :],
+                                   awe2d.geometry.t0, awe2d.geometry.tn, f0=awe2d.geometry.f0,
+                                   src_type=awe2d.geometry.src_type, fs=awe2d.fs)
+    src = None
+    if wav is not None:
+        # assign wavelet
+        src = RickerSource(name='src', grid=awe2d.model.grid, f0=20,
+                           npoint=1, time_range=geometry.time_axis)
+        src.coordinates.data[:, 0] = geometry.src.coordinates.data[0, 0]
+        src.coordinates.data[:, 1] = geometry.src.coordinates.data[0, 1]
+        src.data[:] = wav
+
+    # solve
+    solver = AcousticWaveSolver(awe2d.model, geometry, space_order=awe2d.space_order)
+    d, u, _ = solver.forward(src=src, save=saveu)
+
+    # resample
+    taxis = None
+    if dt is not None:
+        d = d.resample(dt)
+        taxis = d.time_values
+
+    return d, u, taxis
+
+
+@ray.remote
+def _ray_solve_one_shot(awe2d: Acoustic2D, isrc: int, wav: npt.DTypeLike = None, dt: float = None):
+    """Ray wrapper to _solve_one_shot
+    """
+    return _solve_one_shot(awe2d, isrc, wav, dt)
+    

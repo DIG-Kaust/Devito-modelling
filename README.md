@@ -8,13 +8,16 @@ This repository is organized as follows:
 * :open_file_folder: **devitomod**: python library containing routines to perform seismic modelling with devito;
 * :open_file_folder: **data**: folder containing data used in the examples
 * :open_file_folder: **notebooks**: set of jupyter notebooks showcasing how to use devitomod to model seismic data.
+* :open_file_folder: **notebooks**: set of scripts showcasing how to use devitomod to model seismic data.
 
-## Notebooks
+## Notebooks (or scripts)
 The following notebooks are provided:
 
 - :orange_book: ``Acoustic2d.ipynb``: notebook performing 2D Acoustic modelling;
+- :orange_book: ``PAcoustic2d.ipynb``: notebook performing 2D Acoustic modelling (distributing shots with Ray);
 - :orange_book: ``Elastic2d.ipynb``: notebook performing 2D Elastic modelling;
 
+For some of them, a script with equivalent name is also provided - this is reccomended when using Ray.
 
 ## Getting started :space_invader: :robot:
 To ensure reproducibility of the results, we suggest using the `environment.yml` file when creating an environment.

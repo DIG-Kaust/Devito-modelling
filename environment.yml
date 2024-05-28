@@ -10,8 +10,6 @@ dependencies:
   - scipy
   - matplotlib
   - tqdm
-  - pytest
-  - ipython
-  - jupyter
+  - ray-default
   - pip:
     - devito
